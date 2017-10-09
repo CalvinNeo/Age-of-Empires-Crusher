@@ -1,0 +1,156 @@
+; background settings
+; must be loaded at the very beginning
+; [501-512]
+(defconst gl-player-count 501)
+(defconst gl-player-ally-count 502)
+(defconst gl-player-enemy-count 503)
+(defconst gl-placed-next-to-enemy 504)
+
+(defrule
+	(true)
+=>
+	(set-goal gl-player-count 1)
+	(set-goal gl-player-ally-count 0)
+	(set-goal gl-player-enemy-count 0)
+	(disable-self)
+)
+
+; 未组队玩家也是敌人
+(defrule
+	(player-valid 1)
+	(players-stance 1 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 1)
+	(players-stance 1 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 2)
+	(players-stance 2 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 2)
+	(players-stance 2 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 3)
+	(players-stance 3 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 3)
+	(players-stance 3 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 4)
+	(players-stance 4 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 4)
+	(players-stance 4 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 5)
+	(players-stance 5 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 5)
+	(players-stance 5 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 6)
+	(players-stance 6 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 6)
+	(players-stance 6 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 7)
+	(players-stance 7 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 7)
+	(players-stance 7 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 8)
+	(players-stance 8 ally)
+=>
+	(up-modify-goal gl-player-ally-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+(defrule
+	(player-valid 8)
+	(players-stance 8 enemy)
+=>
+	(up-modify-goal gl-player-enemy-count c:+ 1)
+	(up-modify-goal gl-player-count c:+ 1)
+	(disable-self)
+)
+
+
+(defrule
+	(true)
+=>
+	(up-chat-data-to-self "total player is %d" g: gl-player-count)
+	(up-chat-data-to-self "total ally player is %d" g: gl-player-ally-count)
+	(up-chat-data-to-self "total enemy player is %d" g: gl-player-enemy-count)
+	(disable-self)
+)

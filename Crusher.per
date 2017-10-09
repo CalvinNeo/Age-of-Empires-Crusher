@@ -1,0 +1,158 @@
+(load "Crusher\UserPatchConst")
+(load "Crusher\moreconst")
+(load "Crusher\background")
+
+
+(defconst villager-dark 24)
+(defconst villager-feudal 50)
+
+(defconst gl-temp1 1)
+(defconst gl-temp2 2)
+(defconst gl-temp3 3)
+
+; Build villagers
+(defrule
+	(current-age == dark-age)
+	(civilian-population < villager-dark)
+	(can-train villager)
+=>
+	(train villager)
+) 
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-enable-new-building-system 1) ; enable building simultaneously	
+	(set-strategic-number sn-livestock-to-town-center 1)
+	(set-strategic-number sn-allow-adjacent-dropsites 1) ; dropsite close to resources
+	; (set-strategic-number sn-disable-builder-assistance 1)
+	(set-strategic-number sn-initial-exploration-required 0)
+	
+	(disable-self)
+) 
+
+; build first house
+#load-if-not-defined CHINESE-CIV
+(defrule
+	; (current-age == dark-age) ; no matter what age you begin at
+	(population-headroom > 0) ; HUN-civ don't need houses
+	(building-type-count-total house < 1)
+	(up-can-build 0 c: house)
+=>
+	(up-assign-builders c: house c: 2)
+	(set-strategic-number sn-placement-zone-size 1)
+	(up-set-placement-data my-player-number villager c: 1)
+	(up-build place-control 0 c: house)
+)
+(defrule
+	(building-type-count house > 0)
+=>
+	(up-assign-builders c: house c: 1)
+) 
+#end-if
+; build second house
+(defrule
+	; (current-age == dark-age) ; no matter what age you begin at
+	(game-time < 10)
+	(population-headroom > 0)
+	(building-type-count-total house == 1)
+	(up-can-build 0 c: house)
+=>
+	(up-assign-builders c: house c: 1)
+	(set-strategic-number sn-placement-zone-size 1)
+	(up-set-placement-data my-player-number villager c: 1)
+	(up-build place-control 0 c: house)
+)
+; keep housing support
+(defrule
+	; (current-age == dark-age) ; no matter what age you begin at
+	(game-time > 60)
+	(population-headroom > 0)
+	(housing-headroom < 3)
+	(up-pending-objects c: house < 1) ; avoid building several houses simultaneously
+	(up-can-build 0 c: house)
+=>
+	(up-assign-builders c: house c: 1)
+	(set-strategic-number sn-placement-zone-size 1)
+	(up-set-placement-data my-player-number villager c: 1)
+	(up-build place-control 0 c: house)
+)
+
+
+; build first lumber camp
+(defrule
+	;(current-age == dark-age) ; no matter what age you begin at
+	(resource-found wood)
+	;(game-time > 60)
+	(building-type-count house >= 1) ; must finished at-least one house
+	(building-type-count-total lumber-camp < 1)
+	(up-can-build 0 c: lumber-camp)
+=>
+	(up-assign-builders c: lumber-camp c: 1)
+	;(set-strategic-number sn-placement-zone-size 1)
+	;(up-set-placement-data my-player-number villager c: 1)
+	(up-build place-normal 0 c: lumber-camp)
+	(chat-local-to-self "first lumber-camp")
+)
+
+; build first mill
+(defrule
+	;(current-age == dark-age) ; no matter what age you begin at
+	(resource-found food)
+	(unit-type-count-total villager >= 10)
+	(building-type-count-total lumber-camp >= 1) ; lumber-camp is first
+	(building-type-count-total mill < 1)
+	(can-build mill)
+=>
+	(build mill)
+	(chat-local-to-self "first mill")
+)
+
+; research loom
+(defrule
+	(current-age == dark-age)
+	(not (can-train villager))
+	(can-research ri-loom)
+=>
+	(research ri-loom)
+	(chat-local-to-self "can't train villagers, research loom")
+)
+(defrule
+	(current-age == dark-age)
+	(not (can-train villager))
+	(up-research-status c: ri-loom >= research-pending)
+=>
+	(chat-local-to-self "can't train villagers, and loom is researched")
+	(disable-self)
+)
+
+; villager management
+(defrule
+	(current-age == dark-age)
+=>
+	; villagers
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-cap-civilian-gatherers 100)
+	(set-strategic-number sn-cap-civilian-builders 25)
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-gatherers 0)
+	
+	; explore troops
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-total-number-explorers 1)
+	(disable-self)
+)
+
+(defrule
+	(unit-type-count-total villager >= 7)
+=>
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-food-gatherer-percentage 75)
+	(set-strategic-number sn-wood-gatherer-percentage 25)
+	(set-strategic-number sn-gold-gatherer-percentage 0)
+	(set-strategic-number sn-stone-gatherer-percentage 0)
+	(chat-local-to-self "start collecting wood")
+	(disable-self)
+)
