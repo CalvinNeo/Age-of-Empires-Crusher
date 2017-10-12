@@ -1,0 +1,27 @@
+:global
+# background
+gl-player-count
+gl-player-ally-count
+gl-player-enemy-count
+gl-placed-next-to-enemy
+
+gl-temp1
+gl-temp2
+gl-temp3
+
+gl-point1-x
+gl-point1-y
+gl-point2-x
+gl-point2-y
+
+gl-position-self-x
+gl-position-self-y
+
+gl-dark-strategy 
+gl-feudal-strategy 
+gl-castle-strategy 
+gl-imperial-strategy 
+
+:dark
+gl-cant-train-villager-warned
+gl-boar-lurer-search

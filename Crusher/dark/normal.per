@@ -1,0 +1,209 @@
+(defconst villager-dark 22)
+(defconst begin-gather-wood-villager 7)
+(defconst begin-lumber-camp-build-villager 14) ; cut off trees close to TC, enhance farming efficiency
+(defconst begin-mill-build-villager 5) 
+
+(load "Crusher\dark\lure_boar")
+
+; raise a warning when villagers can't be produced continuously, must before train villager rules
+(defrule
+	(current-age == dark-age)
+	(food-amount < 50)
+	(not (can-train villager))
+	(up-pending-objects c: villager < 1)
+	(up-research-status c: ri-loom > research-pending) ; do not use `>=`, because vil can't train during resarching loom
+	(goal gl-cant-train-villager-warned 0)
+=>
+	(chat-local-to-self "can't train villagers, and loom is researched")
+	(up-modify-goal gl-cant-train-villager-warned c:= 1)
+)
+
+; train villagers
+(defrule
+	(current-age == dark-age)
+	(civilian-population < villager-dark)
+	(can-train villager)
+=>
+	(train villager)
+	(up-modify-goal gl-cant-train-villager-warned c:= 0)
+) 
+
+; research loom when can't train villagers
+(defrule
+	(current-age == dark-age)
+	(not (can-train villager))
+	(up-pending-objects c: villager < 1)
+	(can-research ri-loom)
+=>
+	(research ri-loom)
+	(chat-local-to-self "can't train villagers, research loom")
+)
+
+; set global construction rules
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-enable-new-building-system 1) ; enable building simultaneously	
+	(set-strategic-number sn-livestock-to-town-center 1)
+	(set-strategic-number sn-allow-adjacent-dropsites 0) ; dropsite 1 tile away from resources
+	; (set-strategic-number sn-disable-builder-assistance 1)
+	(set-strategic-number sn-initial-exploration-required 0)
+	(disable-self)
+) 
+
+; build town center(if there's none)
+(defrule
+	(game-time > 45)
+	(building-type-count-total town-center < 1)
+	(can-build town-center)
+=>
+	(build town-center)
+)
+
+; build first house
+#load-if-not-defined CHINESE-CIV
+(defrule
+	; (current-age == dark-age) ; no matter what age you begin at
+	(population-headroom > 0) ; HUN-civ don't need houses
+	(building-type-count-total house < 1)
+	(up-can-build 0 c: house)
+=>
+	(up-assign-builders c: house c: 2)
+	(set-strategic-number sn-placement-zone-size 1)
+	(up-set-placement-data my-player-number villager c: 1)
+	(up-build place-control 0 c: house)
+)
+(defrule
+	(building-type-count house > 0)
+=>
+	(up-assign-builders c: house c: 1)
+) 
+#end-if
+; keep housing support
+(defrule
+	; (current-age == dark-age) ; no matter what age you begin at
+	(game-time > 60)
+	(population-headroom > 0)
+	(housing-headroom < 3)
+	(up-pending-objects c: house < 1) ; avoid building several houses simultaneously
+	(up-can-build 0 c: house)
+=>
+	(up-assign-builders c: house c: 1)
+	(set-strategic-number sn-placement-zone-size 1)
+	(up-set-placement-data my-player-number villager c: 1)
+	(up-build place-control 0 c: house)
+)
+
+; build first mill
+(defrule
+	;(current-age == dark-age) ; no matter what age you begin at
+	(resource-found food)
+	(unit-type-count-total villager >= begin-mill-build-villager)
+	(building-type-count-total mill < 1)
+	(up-can-build 0 c: mill)
+=>
+	(up-assign-builders c: mill c: 1)
+	(up-build place-normal 0 c: mill)
+	(chat-local-to-self "first mill")
+)
+
+; build first lumber camp
+(defrule
+	;(current-age == dark-age) ; no matter what age you begin at
+	(resource-found wood)
+	(unit-type-count-total villager >= begin-lumber-camp-build-villager)
+	(building-type-count house >= 1) ; must finished at-least one house
+	(building-type-count-total lumber-camp < 1)
+	(up-can-build 0 c: lumber-camp)
+=>
+	(up-assign-builders c: lumber-camp c: 1)
+	(up-build place-normal 0 c: lumber-camp)
+	(chat-local-to-self "first lumber-camp")
+)
+; send villagers to lumber-camp after it's built
+(defrule
+	(current-age == dark-age)
+	(building-type-count lumber-camp == 1)
+=>
+   (up-reset-search 1 1 1 1)
+   (up-reset-filters)
+   (up-find-local c: lumberjack1 c: 240)
+   (up-find-local c: lumberjack2 c: 240)
+   (up-modify-goal gl-temp1 s:= sn-focus-player-number)
+   (up-modify-sn sn-focus-player-number c:= my-player-number)
+   (up-find-remote c: lumber-camp c: 1)
+   (up-target-objects 0 action-default -1 -1)
+   (up-modify-sn sn-focus-player-number g:= gl-temp1)
+   (chat-local-to-self "send villagers to lumbercamp")
+   (disable-self)
+)
+
+; build barrack
+(defrule
+	(current-age == dark-age)
+	(up-research-status c: feudal-age >= research-pending)
+	(building-type-count-total barracks < 1)
+	(can-build barracks)
+=>
+	(build barracks)
+	(chat-local-to-self "first barrack")
+)
+
+; villager management
+(defrule
+	(current-age == dark-age)
+=>
+	; villagers
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-cap-civilian-gatherers 100)
+	(set-strategic-number sn-cap-civilian-builders 25)
+	
+	; explore troops
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-total-number-explorers 1)
+	(disable-self)
+)
+(defrule
+	(current-age == dark-age)
+	(unit-type-count-total villager <= 5)
+	(not (resource-found food))
+=>
+	(set-strategic-number sn-percent-civilian-explorers 50)
+	(disable-self)
+)
+(defrule
+	(current-age == dark-age)
+	(unit-type-count-total villager <= 5)
+	(resource-found food)
+=>
+	; villagers
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(disable-self)
+)
+(defrule
+	(current-age == dark-age)
+	(unit-type-count-total villager >= begin-gather-wood-villager)
+=>
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-minimum-civilian-explorers 0)
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-food-gatherer-percentage 75)
+	(set-strategic-number sn-wood-gatherer-percentage 25)
+	(set-strategic-number sn-gold-gatherer-percentage 0)
+	(set-strategic-number sn-stone-gatherer-percentage 0)
+	(chat-local-to-self "start collecting wood")
+	(disable-self)
+)
+
+; research feudal-age 
+(defrule
+	(current-age == dark-age)
+	(can-research feudal-age)
+	(unit-type-count-total villager >= villager-dark)
+=>
+	(chat-to-allies "research feudal-age")
+	(research feudal-age)
+	(set-goal gl-dark-strategy end-strategy);
+)
+
+; GOTO feudal strategies

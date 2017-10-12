@@ -1,0 +1,91 @@
+(defconst begin-hunt-boar-villager 10)
+(defconst normal-boar-hunt-group-size 8)
+(defconst begin-hunt-boar2-food-threshold 200)
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-maximum-hunt-drop-distance 32)
+	(disable-self)
+)
+
+(defrule
+	(up-research-status c: ri-loom >= research-pending)
+	(unit-type-count-total villager >= begin-hunt-boar-villager)
+	(strategic-number sn-enable-boar-hunting != 2)
+	(dropsite-min-distance live-boar != -1)
+	(dropsite-min-distance live-boar s:< sn-maximum-hunt-drop-distance)
+=>
+	(set-strategic-number sn-enable-boar-hunting 2)
+	(set-strategic-number sn-maximum-hunt-drop-distance 32)
+)
+(defrule
+	(strategic-number sn-enable-boar-hunting == 2)
+	(dropsite-min-distance live-boar != -1)
+	(dropsite-min-distance live-boar != 255)
+	(dropsite-min-distance live-boar < 32)
+	(unit-type-count villager-hunter == 0)
+=>
+	(set-strategic-number sn-minimum-number-hunters 1)
+	(set-strategic-number sn-minimum-boar-hunt-group-size 1)
+	(set-strategic-number sn-minimum-boar-lure-group-size 1)
+	(chat-local-to-self "Begin luring boar")
+	(up-retask-gatherers sheep-food c: 2)
+	(up-request-hunters s: sn-minimum-boar-lure-group-size)
+)
+(defrule
+	(strategic-number sn-enable-boar-hunting == 2)
+	(dropsite-min-distance live-boar != -1)
+	(dropsite-min-distance live-boar < 5) ; the boar is approaching TC
+	(or(unit-type-count hunter1 >= 1)
+	   (unit-type-count hunter2 >= 1))
+	(unit-type-count villager-hunter < 6) 
+=>
+	; request hunters to kill boar
+	(set-strategic-number sn-minimum-number-hunters normal-boar-hunt-group-size)
+	(set-strategic-number sn-minimum-boar-lure-group-size normal-boar-hunt-group-size)
+	(set-strategic-number sn-minimum-boar-hunt-group-size normal-boar-hunt-group-size)
+	(chat-local-to-self "Request support hunters")
+	(up-request-hunters c: normal-boar-hunt-group-size)
+)
+(defrule
+	(strategic-number sn-enable-boar-hunting == 2)
+	(dropsite-min-distance live-boar s:< sn-maximum-hunt-drop-distance)
+	(dropsite-min-distance boar-hunting < 10)
+	(up-remaining-boar-amount < 200)
+	(strategic-number sn-minimum-number-hunters > 1)
+=>
+	(set-strategic-number sn-minimum-number-hunters 1)
+	(set-strategic-number sn-minimum-boar-hunt-group-size 1)
+	(set-strategic-number sn-minimum-boar-lure-group-size 1)
+	(chat-local-to-self "Attempting to lure another boar")
+	(up-reset-search 1 1 1 1)
+	(up-reset-filters)
+	(up-set-target-point gl-position-self-x)
+	(up-filter-distance c: -1 c: 20)
+	(up-find-local c: villager-class c: 1)
+	(set-goal gl-boar-lurer-search 1)
+)
+(defrule
+	(goal gl-boar-lurer-search 1)
+	(up-set-target-object search-local c: 0)
+	(up-object-data object-data-hitpoints < 40)
+=>
+	(up-reset-search 0 1 0 0)
+	(up-find-local c: villager-class c: 1)
+	(up-jump-rule -1)
+	(chat-local-to-self "Injured villager found -- search again.")
+)
+(defrule
+	(goal gl-boar-lurer-search 1)
+	(up-set-target-object search-local c: 0)
+=>
+	(up-filter-distance c: -1 s: sn-maximum-hunt-drop-distance)
+	(set-strategic-number sn-focus-player-number 0)
+	(up-find-remote c: wild-boar c: 1)
+	(up-find-remote c: javelina c: 1)
+	(up-set-target-object search-remote c: 0)
+	(up-target-objects 0 action-default -1 -1) ; walk selected units from up-find-local to up-find-remote.
+	(chat-local-to-self "Begin luring boar (2)")
+	(set-goal gl-boar-lurer-search 2)
+)
