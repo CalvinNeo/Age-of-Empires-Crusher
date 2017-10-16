@@ -1,0 +1,78 @@
+
+(defrule
+    (taunt-detected my-player-number 233)
+=>
+    (up-chat-data-to-self "livestock %d" g: gl-current-sighted-sheep)
+    (acknowledge-taunt my-player-number 233)
+)
+
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == -1)
+=>
+    (chat-to-all "livestock -1")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 0)
+=>
+    (chat-to-all "livestock 0")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 1)
+=>
+    (chat-to-all "livestock 1")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 2)
+=>
+    (chat-to-all "livestock 2")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 3)
+=>
+    (chat-to-all "livestock 3")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 4)
+=>
+    (chat-to-all "livestock 4")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 5)
+=>
+    (chat-to-all "livestock 5")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 6)
+=>
+    (chat-to-all "livestock 6")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 7)
+=>
+    (chat-to-all "livestock 7")
+    (acknowledge-taunt my-player-number 234)
+)
+(defrule
+    (taunt-detected my-player-number 234)
+    (up-object-type-count c: livestock-class == 8)
+=>
+    (chat-to-all "livestock 8")
+    (acknowledge-taunt my-player-number 234)
+)

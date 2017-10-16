@@ -1,9 +1,31 @@
 (defconst villager-dark 22)
 (defconst begin-gather-wood-villager 7)
 (defconst begin-lumber-camp-build-villager 14) ; cut off trees close to TC, enhance farming efficiency
-(defconst begin-mill-build-villager 5) 
+(defconst begin-mill-build-villager 3) 
+
+
+
+#load-if-defined AZTEC-CIV
+(defconst scout-unit eagle-warrior-line)
+#end-if
+#load-if-defined MAYAN-CIV
+(defconst scout-unit eagle-warrior-line)
+#end-if
+#load-if-defined INCAN-CIV
+(defconst scout-unit eagle-warrior-line)
+#end-if
+#load-if-not-defined AZTEC-CIV
+#load-if-not-defined MAYAN-CIV
+#load-if-not-defined INCAN-CIV
+(defconst scout-unit scout-cavalry-line)
+(defconst big-boy-armor ri-chain-barding)
+#end-if
+#end-if
+#end-if
+
 
 (load "Crusher\dark\lure_boar")
+(load "Crusher\dark\villagers_percent")
 
 ; raise a warning when villagers can't be produced continuously, must before train villager rules
 (defrule
@@ -44,10 +66,18 @@
 	(true)
 =>
 	(set-strategic-number sn-enable-new-building-system 1) ; enable building simultaneously	
-	(set-strategic-number sn-livestock-to-town-center 1)
 	(set-strategic-number sn-allow-adjacent-dropsites 0) ; dropsite 1 tile away from resources
 	; (set-strategic-number sn-disable-builder-assistance 1)
 	(set-strategic-number sn-initial-exploration-required 0)
+	(disable-self)
+) 
+
+; set global resource rules
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-livestock-to-town-center 1)
+	(set-strategic-number sn-livestock-defend-priority 1)
 	(disable-self)
 ) 
 
@@ -145,54 +175,22 @@
 	(building-type-count-total barracks < 1)
 	(can-build barracks)
 =>
-	(build barracks)
+	(up-set-placement-data my-player-number villager c: 15)
+	(up-build place-control 0 c: barracks)
 	(chat-local-to-self "first barrack")
 )
 
-; villager management
+; build farms
 (defrule
-	(current-age == dark-age)
+	(up-research-status c: feudal-age <= research-pending)
+	(up-object-type-count c: livestock-class <= 2)
+	(idle-farm-count < 1)
+	(up-pending-objects c: farm < 3)
+	(can-build farm)
 =>
-	; villagers
-	(set-strategic-number sn-cap-civilian-explorers 0)
-	(set-strategic-number sn-cap-civilian-gatherers 100)
-	(set-strategic-number sn-cap-civilian-builders 25)
-	
-	; explore troops
-	(set-strategic-number sn-number-explore-groups 1)
-	(set-strategic-number sn-total-number-explorers 1)
-	(disable-self)
-)
-(defrule
-	(current-age == dark-age)
-	(unit-type-count-total villager <= 5)
-	(not (resource-found food))
-=>
-	(set-strategic-number sn-percent-civilian-explorers 50)
-	(disable-self)
-)
-(defrule
-	(current-age == dark-age)
-	(unit-type-count-total villager <= 5)
-	(resource-found food)
-=>
-	; villagers
-	(set-strategic-number sn-percent-civilian-explorers 0)
-	(disable-self)
-)
-(defrule
-	(current-age == dark-age)
-	(unit-type-count-total villager >= begin-gather-wood-villager)
-=>
-	(set-strategic-number sn-percent-civilian-explorers 0)
-	(set-strategic-number sn-minimum-civilian-explorers 0)
-	(set-strategic-number sn-cap-civilian-explorers 0)
-	(set-strategic-number sn-food-gatherer-percentage 75)
-	(set-strategic-number sn-wood-gatherer-percentage 25)
-	(set-strategic-number sn-gold-gatherer-percentage 0)
-	(set-strategic-number sn-stone-gatherer-percentage 0)
-	(chat-local-to-self "start collecting wood")
-	(disable-self)
+	(up-retask-gatherers food c: 1)
+	(build farm)
+	(chat-local-to-self "build farm")
 )
 
 ; research feudal-age 
@@ -206,4 +204,27 @@
 	(set-goal gl-dark-strategy end-strategy);
 )
 
+; get sheep
+(defrule
+	(true)
+=>
+	(set-goal gl-deferred-sheep-count  0)
+	(disable-self)
+)
+(defrule
+	(current-age == dark-age)
+	(up-compare-goal gl-deferred-sheep-count g:< gl-current-sighted-sheep)
+=>
+	(up-modify-goal gl-deferred-sheep-count g:= gl-current-sighted-sheep)
+	(up-chat-data-to-self "new sheep sighted, current count is %d" g: gl-current-sighted-sheep)
+)
+
+(defrule
+	(current-age == dark-age)
+	(up-compare-goal gl-deferred-sheep-count g:> gl-current-sighted-sheep)
+=>
+	(up-modify-goal gl-deferred-sheep-count g:= gl-current-sighted-sheep)
+)
+
 ; GOTO feudal strategies
+

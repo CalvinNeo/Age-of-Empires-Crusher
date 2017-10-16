@@ -4,6 +4,7 @@ gl-player-count
 gl-player-ally-count
 gl-player-enemy-count
 gl-placed-next-to-enemy
+gl-current-sighted-sheep
 
 gl-temp1
 gl-temp2
@@ -25,3 +26,4 @@ gl-imperial-strategy
 :dark
 gl-cant-train-villager-warned
 gl-boar-lurer-search
+gl-deferred-sheep-count

@@ -7,6 +7,7 @@
 	(set-goal gl-player-count 1)
 	(set-goal gl-player-ally-count 0)
 	(set-goal gl-player-enemy-count 0)
+	(set-goal gl-current-sighted-sheep 0)
 	(disable-self)
 )
 
@@ -148,4 +149,71 @@
 	(up-chat-data-to-self "total ally player is %d" g: gl-player-ally-count)
 	(up-chat-data-to-self "total enemy player is %d" g: gl-player-enemy-count)
 	(disable-self)
+)
+
+
+(defrule
+	(up-gaia-type-count c: livestock-class == -1)
+=>
+	(set-goal gl-current-sighted-sheep -1)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 0)
+=>
+	(set-goal gl-current-sighted-sheep 0)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 1)
+=>
+	(set-goal gl-current-sighted-sheep 1)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 2)
+=>
+	(set-goal gl-current-sighted-sheep 2)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 3)
+=>
+	(set-goal gl-current-sighted-sheep 3)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 4)
+=>
+	(set-goal gl-current-sighted-sheep 5)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 5)
+=>
+	(set-goal gl-current-sighted-sheep 5)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 6)
+=>
+	(set-goal gl-current-sighted-sheep 6)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 7)
+=>
+	(set-goal gl-current-sighted-sheep 7)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 8)
+=>
+	(set-goal gl-current-sighted-sheep 8)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 9)
+=>
+	(set-goal gl-current-sighted-sheep 9)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 10)
+=>
+	(set-goal gl-current-sighted-sheep 10)
+)
+(defrule
+	(up-gaia-type-count c: livestock-class == 11)
+=>
+	(set-goal gl-current-sighted-sheep 11)
 )
